@@ -1,0 +1,35 @@
+digraph Interpretation{
+    rankdir=LR;
+    # online editor: https://dreampuf.github.io/GraphvizOnline/
+    {node[shape="diamond", label="N-gram stored?\n(e.g. unpruned)"] in_db;}
+    {node[shape="diamond", label="N-gram in Model?\n(test by bloom filter)"] in_model;}
+    {node[shape="diamond", label="N-gram below Threshold?\n(test by bloom filter)"] below_thres; below_thres2;}
+#   node[shape="circle", label="Done"] done;
+    node[shape="point"] start;
+    node[shape="box"]
+    {node[label="unknown\n(collision in one of the filters)"] dont_know;}
+    {node[label="Count = 0"] unseen;}
+    {node[label="Return Count from DB"] read_db}
+    {node[label="Count &isin; [1, r]"] probably_below_thres;}
+    {node[label="Calculate Count using Model"] calculate;}
+
+    start -> in_db
+    
+    in_db   -> in_model[label="Yes"]
+    in_db   -> read_db [label="No"]
+
+    in_model -> below_thres[label="&notin;"]
+    in_model -> below_thres2[label="&isin;"]
+    
+    below_thres -> probably_below_thres[label="&isin;"]
+    below_thres -> unseen [label="&notin;"];
+
+    below_thres2 -> calculate[label="&notin;"]
+    below_thres2 -> dont_know[label="&isin;"]
+    
+#   read_db -> done;
+#   unseen -> done;
+#   probably_below_thres -> done;
+#   dont_know -> done
+#   calculate -> done
+}

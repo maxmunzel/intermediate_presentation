@@ -1,0 +1,561 @@
+%% LaTeX-Beamer template for KIT design
+%% by Erik Burger, Christian Hammer
+%% title picture by Klaus Krogmann
+%%
+%% version 2.4
+%%
+%% mostly compatible to KIT corporate design v2.0
+%% http://intranet.kit.edu/gestaltungsrichtlinien.php
+%%
+%% Problems, bugs and comments to
+%% burger@kit.edu
+
+%% Class options
+%%   aspect ratio options: 
+%%   -- 16:9 (default)
+%%   -- 4:3
+%%   language options: 
+%%   -- en (default)
+%%   -- de
+%%   position of navigation bar:
+%%   -- navbarinline (default): bottom of the white canvas
+%%   -- navbarinfooter : more compressed variant inside the footer
+%%   -- navbarside : side bar at the left of the white canvas
+%%   -- navbaroff : none
+%% example: \documentclass[16:9,de,navbarinfooter]{sdqbeamer}
+\documentclass[16:9,en,navbarinfooter]{sdqbeamer}
+
+%% \documentclass{sdqbeamer} 
+
+%% TITLE PICTURE
+
+% if a custom picture is to be used on the title page, copy it into the 'logos'
+% directory, in the line below, replace 'myimage' with the 
+% filename (without extension) and uncomment the following line
+% (picture proportions: 63 : 20 for standard, 169 : 40 for wide
+% *.eps format if you use latex+dvips+ps2pdf, 
+% *.jpg/*.png/*.pdf if you use pdflatex)
+
+% \titleimage{myimage}
+
+%% GROUP LOGO 
+
+% for a custom group logo, copy your file into the 'logos'
+% directory, insert the filename in the line below and uncomment it
+
+\grouplogo{transparent}
+
+% (*.eps format if you use latex+dvips+ps2pdf,
+% *.jpg/*.png/*.pdf if you use pdflatex)
+
+%% GROUP NAME
+
+% for groups other than SDQ, please insert in the line below and uncomment it
+% \groupname{My group}
+
+% the presentation starts here 
+
+\title{Efficient Pruning of N-gram Corpora for Culturomics using Language Models}
+\subtitle{}
+\author{Caspar Nagy}
+
+% Bibliography 
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{color}
+\usepackage{array}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{pgfplots}
+% \pgfplotsset{compat=1.15}
+ \usepgfplotslibrary{groupplots}
+\usepackage{subcaption}
+\usepackage{pdflscape}
+\usepackage{diagbox}
+\usepackage{multicol}
+\DeclareUnicodeCharacter{2212}{−}
+\usepgfplotslibrary{groupplots,dateplot}
+\usetikzlibrary{patterns,shapes.arrows}
+\pgfplotsset{compat=newest}
+\usepackage[citestyle=authoryear,bibstyle=numeric,hyperref,backend=biber%,style=verbose
+]{biblatex}
+\addbibresource{presentation.bib}
+\bibhang1em
+\usepackage{listings}
+\begin{document}
+
+%title page
+\KITtitleframe{}
+
+%table of contents
+
+\section{Motivation}
+\subsection{Culturomics}
+\begin{frame}[fragile]{Motivation}
+\vspace{1cm}
+\begin{columns}
+\column{.6\textwidth}
+\begin{itemize}
+    \item Part of Digital Humanities
+    \item Culturomics uses Big Data Technology to observe Culture over hundreds of years.
+    \item N-gram corpora made from historic books, news articles, 
+        law text, \ldots
+    \item The ``Google Books Ngrams'' is the most relevant corpus.
+        \begin{itemize}
+            \item Based on the Google Books Project
+            \item $\approx 4\%$ off all books ever written
+            \item All consecutive word chains (N-grams) up to length 5 were counted up by year
+            \item Over 2TB in size
+        \end{itemize}
+\end{itemize}
+
+    \textbf{How can we reduce the size of corpora like this?}\\
+\column{.4\textwidth}
+    \begin{center}
+    \tiny
+        Example 1-gram Analysis by the original Google Books Ngrams Paper \textbf{[Michel2012]}
+    \end{center}
+    \includegraphics[width=\linewidth]{influenza}
+        %\vspace{.5cm}
+%    \includegraphics[width=.8\linewidth]{years}
+\lstset{
+frame = single,  
+framexleftmargin=1pt}
+\begin{lstlisting}[title={Sample of 2-grams.tsv}]
+Last	Departure	80
+law	restored	1639
+\end{lstlisting}
+% Later	Virginia	160
+% lake	area		106
+\end{columns}
+\end{frame}
+\subsection{N-gram Corpora}
+\begin{frame}[fragile]{Culturomics and Natural Language Processing (NLP)}
+\begin{itemize}
+    \item NLP uses comparable N-gram corpora
+    \item NLP uses probablistic methods to process human language
+    \begin{itemize}
+        \item Speech Recognition (``their'' vs. ``they're'')
+        \item Grammar Checking 
+        \item Topic Grouping 
+    \end{itemize}
+    \item They have two main ways to reduce their size:
+    \begin{itemize}
+            \item Compression
+            \item Pruning
+    \end{itemize}
+    \item We will focus on pruning.
+        \begin{itemize}
+                \item Calculate some score $f(w)$ over each N-gram 
+                \item Delete all N-grams where $f(w) < \theta$ for some $\theta \in \mathbb R$
+                \item Example: Prune all N-grams that have a count < 40 (frequency pruning)
+        \end{itemize}
+\end{itemize}
+\end{frame}
+
+\section{N-gram NLP}
+\subsection{N-gram NLP} 
+
+\begin{frame}{N-gram Language Models}
+\vspace{1.1cm}
+    Let history $h:= (Alice\ went\ to\ the\ door\ and)$, word $w:=(knocked)$.
+\begin{itemize}
+\item Estimating Probabilities:
+    $$P(knocked|Alice\ went\ to\ the\ door\ and) \overset {MLE} = \frac {Count(Alice\ went\ to\ the\ door\ and\ knocked)}{
+Count(Alice\ went\ to\ the\ door\ and)}$$
+
+\item Markov-assumption:
+\begin{equation*} 
+\begin{split}
+    P(w|h) = P(knocked|Alice\ went\ to\ the\ door\ and )
+    & \approx P_{3-gram}(w|h) =  P(knocked|              door\ and) \\
+&  \approx P_{2-gram}(w|h) =  P(knocked|                    and) \\
+&  \approx P_{1-gram}(w|h) =  P(knocked) \\
+\end{split}
+\end{equation*}
+
+\item Chain Rule of Probability for longer Text: $P(w_1,\ldots, w_n)=\prod_{k=1}^n P(w_k|w_1, \ldots, w_{k-1})$
+\item Backoff
+    \begin{itemize}
+            \item N-gram models cannot capture examples of every word combination
+            \item $P(w|h)=0$ both unrealisitic and undesireable
+                \begin{itemize}
+                    \item if $P(w|h) = 0$, fall back to a shorter model
+                \end{itemize}
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{NLP Pruning}
+\vspace{1cm}
+\begin{itemize}
+%   \item Pruning is an effective way to reduce the size of an N-gram corpus.
+    \item Scoring Functions used:
+    \begin{itemize}
+        \item Frequency: $Count(w)$
+        \item Weighted difference: $Count(w) \cdot (\log(P_{original}(w)) - \log(P_{backed\ off}(w)))$%~(\cite{seymore1996})
+            \begin{itemize}
+                \item $P(City | York) \approx P(City | New\ York)$
+            \end{itemize}
+        \item Relative entropy (``Stolcke Pruning'')%~(\cite{Stolcke2000})
+    \end{itemize}
+    \item Problem: Culturomics is a research tool
+    \begin{itemize}
+        \item We want\dots
+            \begin{itemize}
+            \item clear semantics: ``How does the data presentated relate to the raw data?''
+            \item reliable counts.
+            \item no backoff.
+            \end{itemize}
+        \item \textbf{This rules out all methods but frequency pruning.}
+    \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+\section{A model-based Pruning Approach}
+\subsection{A model-based Pruning Approach}
+
+\begin{frame}{A model-based Pruning Approach}
+    \begin{columns}
+    \column{.6\textwidth}
+    \begin{itemize}
+        \item $P(w) \propto Count(w)$
+        \item $P_{N-gram}(w) \approx P(w)$
+        \item Use $P_{N-gram}(w)$ to estimate $Count(w)$ using a linear model
+        \item Prune all N-grams for which our estimatation error 
+            is $\leq r$ for some tolerance $r\in\mathbb N$
+        \item Properties:
+        \begin{itemize}
+            \item uses shorter N-gram's information
+            \item pruned counts are never off by more than $r$
+            \item threshold pruning as a corner case for $slope=0,\ intercept = \frac r2$
+        \end{itemize}
+\end{itemize}
+\column{.4\textwidth}
+\begin{figure}
+    \input{scatter.tex}
+\end{figure}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Model Pruning: Properties}
+    \vspace{1cm}
+    \begin{itemize}
+            \item Pruned counts are never off by more than $r$
+            \item Threshold pruning as a corner case for $slope=0,\ intercept = \frac r2$
+            \item We use Bloom Filters to tell apart unknown, model
+                pruned and frequency pruned N-grams
+                \begin{itemize}
+                    \item small probablity to missclassify unseen 
+                        N-grams
+                        \begin{itemize}
+                            \item Work arounds: Full text search on 
+                                source text
+                        \end{itemize}
+                \end{itemize}
+            \item The linear models are created using RANSAC
+    \end{itemize}
+    \begin{block}{Bloom Filters}
+    A Bloom filter is a space efficent set data structure, that allows membership queries.
+    They have a user-chosen chance $\epsilon$ of falsely returning $\in$. This is called a \emph{collision}.
+    \end{block}
+    \begin{block}{RANSAC}
+    RANSAC is a probablistic algorithm for robust linear fits. It's commonly used in Computer Vision.
+    \end{block}
+\end{frame}
+\subsection{A model-based Pruning Approach}
+\section{Experiments}
+\subsection{Experiments}
+\begin{frame}{Experiments: Overview}
+    \begin{itemize}
+        \item Questions
+    \begin{itemize}
+        \item How accurate is $P_{N-gram}(w)$ for different lengths $N$?
+    \item How well does our pruning method work\ldots
+        \begin{itemize}
+        \item compared to frequency pruning?
+        \item combined with frequency pruning?
+        \item despite the pruning errors?despite the pruning errors?
+        \end{itemize}
+    \end{itemize}
+    \item Setup
+        \begin{itemize}
+            \item Unpruned 7-gram corpus of Wikipedia articles
+            \item Sampled 1M N-grams per length (i.e. 7M in total)
+            \item Simulated pruning on pre-calculated 
+                $(P_{N-gram}(w), Count(w))$-Tuples
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Experiment 1: Pruning Effectiveness by different Models}
+\begin{columns}
+
+\column{.5\linewidth}
+    \begin{itemize}
+        \item We pruned 7-grams using 1-,\ldots,6-grams.
+        \item Question: NLP mainly uses 3- and 4-gram models on arbitrary long texts
+            Is there a point of deminishing returns?
+        \item Results:
+            \begin{itemize}
+                \item As expected, longer models outperform shorter ones
+                    \begin{itemize}
+                        \item except 2-grams
+                    \end{itemize}
+                \item No point of deminishing returns
+            \end{itemize}
+    \end{itemize}
+    \textbf{Moving forward, we will always use the longest available model.}
+
+\column{.5\linewidth}
+    \vspace{1cm}
+    \begin{figure}[H]
+    \input{ex1.tex}
+    %\caption{Pruning ratios on 7-grams}
+    \end{figure}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Comparison and Combination with Frequency Pruning}
+\vspace{1cm}
+    \begin{center}
+    Pruning ratios on 5-grams
+    \end{center}
+%\begin{figure}[H]
+\centering% \includegraphics[width=\textwidth/2]{plots/ex2.png}
+\input{ex3.tex}
+%\end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{Comparison and Combination with Frequency Pruning}
+\vspace{1cm}
+\begin{columns}
+    \column{.4\linewidth}
+    \begin{itemize}
+        \item The table shows which ratio of the N-grams \emph{after} frequency pruning
+            remain after model pruning with tolerance $r$
+        \begin{itemize}
+            \item Our approach shows great potential over a wide range of
+                $(r,threshold)$-combinations.
+            \item Even at a high threshold of $100$ combined with smaller values for $r$, we
+                can prune about half of all remaining N-grams
+        \end{itemize}
+    \end{itemize}
+    \column{.6\linewidth}
+       \begin{figure}[H]
+       \centering% \includegraphics[width=\textwidth/2]{plots/ex2.png}
+       \input{../thesis/table_improvement_ratios_5_triangle.tex}
+       \caption*{Ratio of combined approach compared to frequency pruning on a 5-gram corpus.} 
+       \end{figure}
+\end{columns}
+\end{frame}
+
+\begin{frame}{End-to-End Evaluation}
+    \begin{columns}
+    \column{.5\linewidth}
+    \begin{itemize}
+        \item Previous Experiments:
+            \begin{itemize}
+                \item Work on precomputed values of $P_{N-gram}(w)$
+                \item But pruning introduces noise into $P_{N-gram}(w)$
+            \end{itemize}
+        \item This Experiment:
+            \begin{itemize}
+                \item Build a sample corpus from 7-grams and their sub-N-grams 
+                    ($\approx 1.8$M N-grams)
+                \item Extend our model into a working system, and prune said corpus
+            \end{itemize}
+        \item Results
+                \begin{itemize}
+                    \item Pruning ratio worsens from $\approx .2-.3$ to $\approx .3-.4$
+                    \item Still a significant improvement!
+                \end{itemize}
+    \end{itemize}
+    \column{.5\linewidth}
+        \begin{figure}
+        \input{ex4_table.tex}
+            \caption*{Improvement over thresholding in end-to-end pruning on a 5-gram corpus.}
+        \end{figure}
+    \end{columns}
+\end{frame}
+
+\section{Conclusion}
+\subsection{Conclusion}
+
+\begin{frame}{Conclusion}
+\begin{itemize}
+    \item We developed a pruning algorithm that reduced frequency pruned corpora to $\approx 30-40\%$ of their size.
+    \item Further Work 
+    \begin{itemize}
+        \item Combination with Compression
+        \item Representation of Time
+    \end{itemize}
+    \item Lessons Learned
+    \begin{itemize}
+        \item N-gram NLP is a facinatingly well-studied subject
+        \begin{itemize}
+            \item Culturomics is mostly unstudied on a technical level
+        \item NLP methods can be useful for other N-gram applications
+        \end{itemize}
+%       \item Taco Bell Programming is great for Big Data
+%       \item Python + PyPy/Numba can get you very far
+%       \item Jupyter Notebooks are easy to get wrong
+    \end{itemize}
+\end{itemize}
+\end{frame}
+\appendix
+\beginbackup{}
+
+\begin{frame}[allowframebreaks]{References}
+\printbibliography{}
+\end{frame}
+
+\begin{frame}{Example: Calculating $P_{N-gram}(w)$}
+\begin{itemize}
+    \item Example: Estimating $P(I\ am\ Brian)$ using a 2-gram corpus
+\begin{equation*}
+\begin{aligned}
+P(I\ am\ Brian) &=       P(I)                                        \cdot P(am|I)                        \cdot P(Brian|I\ am)             \qquad &&  \text{Chain Rule} \\
+                &\approx P(I)                                        \cdot P(am|I)                        \cdot P(Brian| am)                      &&  \text{Markov Assumption} \\
+%                &=       P(I)                                        \cdot \frac {Count(I\ am)} {Count(I)}        \cdot \frac {Count(am\ Brian)}{Count(am)}       &&  \text{MLE} \\
+                &= \frac {Count(I)} {\sum_{w \in corpus, |w| = 1} Count(w) } \cdot \frac {Count(I\ am)} {Count(I)}        \cdot \frac {Count(am\ Brian)}{Count(am)}       &&  \text{MLE} 
+\end{aligned}
+\end{equation*}
+\end{itemize}
+
+
+\end{frame}
+\begin{frame}{Pruning}
+\vspace{.9cm}
+    \begin{itemize}
+        \item We prune N-grams by ascending length (1-grams first, then 2-grams, \ldots)
+        \item For each length, we take a sample of N-grams and build our linear models
+            $C_{estimated}(w) = slope \cdot P_{N-gram}(w) + intercept$ using RANSAC
+        \item We then divide N-grams in three mutually exclusive cases:
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+% \item The N-gram is unknown (i.e.~has \(C(w) = 0\)).
+\item $Count(w) < threshold$
+    \begin{itemize}
+            \item Add to $Bloom\_Filter_{threshold}$ and remove from corpus
+    \end{itemize}
+\item Our estimation error is $\leq r$, so we can estimate its count when it is queried.
+    \begin{itemize}
+            \item Add to $Bloom\_Filter_{model}$ and remove from corpus
+    \end{itemize}
+\item Otherwise
+    \begin{itemize}
+        \item Keep in Corpus
+    \end{itemize}
+\end{enumerate}
+\end{itemize}
+    %\vspace{1cm}
+    \begin{block}{RANSAC}
+    RANSAC is a probablistic algorithm for robust linear fits. It's commonly used in Computer Vision.
+    \end{block}
+    \begin{block}{Bloom Filters}
+    A Bloom filter is a space efficent set data structure, that allows membership queries.
+    They have a user-chosen chance $\epsilon$ of falsely returning $\in$. This is called a \emph{collision}.
+    \end{block}
+
+\end{frame}
+
+\begin{frame}[fragile]{Pruning}
+\vspace{1cm}
+\def\set#1#2{\left\{#1 \ \mid{} \ #2 \right\} }
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+\Procedure{pruning}{$corpus, r, threshold$}
+\For{$n \gets 1,\ldots \max_w |w|$}
+    \State{$model\_pruned, thresh\_pruned \gets \emptyset$}
+    \State{$ngrams \gets \left\{w \in corpus \ \mid \  |w| = n  \right\} $}
+    \State{$thresh\_pruned \gets \left\{w \in ngrams \ \mid \ C(w) < threshold \right\} $}
+    \State{$estimates \gets \left\{(P_{N-gram}(w), C(w))  \ \mid \  w \in ngrams \setminus thresh\_pruned  \right\} $ }
+    \State{$model \gets fit\_linear\_model(estimates, r)$}
+    \State{$model\_pruned \gets \left\{w \in ngrams \setminus thresh\_pruned  \ \mid \  r \leq |C(w) - model.estimateCount(w)| \right\} $}
+    \State{$unpruned \gets ngrams \setminus (thresh\_pruned \cup model\_pruned)$}
+    \State{$result[n] \gets (bloom\_filter(thresh\_pruned), model, bloom\_filter(model\_pruned), unpruned)$}
+\EndFor{}
+\State{\textbf{return} $result$}
+\EndProcedure{}
+\end{algorithmic}
+\end{algorithm}
+\end{frame}
+
+\subsection{A model-based Pruning Approach}
+\begin{frame}{Querying}
+    \includegraphics[width=\textwidth]{Interpretation.pdf}
+\end{frame}
+\begin{frame}[fragile]{N-gram Models: Problems}
+\vspace{1cm}
+\begin{itemize}
+
+\item Problems:
+\begin{itemize}
+\item small N $\rightarrow$ little context
+\item high N $\rightarrow$ little generality, very high storage requirements
+\end{itemize}
+\end{itemize}
+
+\lstset{
+frame = single,  
+framexleftmargin=1pt}
+\begin{columns}
+
+\column{0.2\textwidth}
+\begin{lstlisting}[title={2-grams.txt}]
+and if        5 
+and in        7 
+and wondering 2
+and butter    6
+and knocked   1
+\end{lstlisting}
+
+\column{0.34\textwidth}
+\begin{lstlisting}[title={5-grams.txt}]
+to the door and knocked 1
+to the door and tried   1
+the door and tried to   1
+and tried to open it    1
+tried to open it but    1
+\end{lstlisting}
+\column{0.45\textwidth}
+    \begin{figure}[H]
+    \input{space.tex}
+        \caption*{Space needed for a text corpus and its N-grams}
+    \end{figure}
+\end{columns}
+
+\end{frame}
+\begin{frame}{N-gram Models in Practice}
+\vspace{1cm}
+\begin{itemize}
+	\item N-gram creation
+	\item pruning
+	\begin{itemize}
+		\item by frequency (e.g.\ remove all N-grams with $counts < 40$)
+		\item by entropy (\cite{Stolcke98})
+	\end{itemize}
+\item compression
+	\begin{itemize}
+		\item using Bloom filters (\cite{Talbot07})
+        \begin{itemize}
+                \item
+        \end{itemize}
+		\item using Tries
+		\item \dots
+	\end{itemize}
+	\item {interpretation}
+	\begin{itemize}
+		\item backoff (falling back to lower N-grams)
+		\item interpolation (mixing the estimates of different N-Gram models)
+		\item smoothing (accounting for unknown N-grams)
+		\end{itemize}
+	\item application
+	
+\end{itemize}
+\end{frame}
+\backupend{}
+
+\end{document}
