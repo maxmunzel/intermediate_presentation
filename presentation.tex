@@ -62,6 +62,9 @@
 \subtitle{Box Pushing on a real Panda Robot}
 
 % Bibliography 
+\usepackage{dsfont}
+%\usepackage{multimedia}
+%\usepackage{media9}
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{color}
@@ -91,7 +94,98 @@
 
 %table of contents
 
-\section{Motivation}
+\begin{frame}
+\frametitle{Agenda}
+\tableofcontents
+\end{frame}
+
+\section{Motion Primitive-Based (Re-)Planning Policy (MP3)}
+\begin{frame}{Motion Primitive-Based (Re-)Planning Policy (MP3)}
+
+\begin{columns}[t]
+    \begin{column}{0.5\textwidth}
+        \begin{itemize}
+            \item Idea: let agent choose parameters of trajectory generator instead of low-level actions
+                \begin{itemize}
+                    \item We use ProDMPs for their replanning-ability
+                \end{itemize}
+            \item Leads to smooth trajectories, correlated exploration
+            \item Can use sparse, non-markovian rewards
+            \item Blackbox and replanning variant
+        \end{itemize}
+    \end{column}
+    %\movie[width=\linewidth]{MP3-Replan Boxpushing}{media/7dof_boxpushing_replan.mp4}
+    \begin{column}{0.5\textwidth}
+    \end{column}
+\end{columns}
+\vspace{.3cm}
+     We have impressive results with simulated environments, but how well do they work in the real world?
+\end{frame}
+
+\begin{frame}{Box Pushing}
+
+\includegraphics[width=.8\linewidth]{media/2dboxpushing}
+
+\end{frame}
+\begin{frame}{Box Pushing}
+\section{Box Pushing}
+
+\begin{columns}[t]
+    \begin{column}{0.5\textwidth}
+        \begin{itemize}
+            \item Goal: Use a finger to push a box to a target pose
+                \begin{itemize}
+                    \item Random start pose
+                    \item Fixed target pose
+                \end{itemize}
+            \item Action space: 2D finger positions
+            \item Observation:
+                \begin{itemize}
+                    \item Finger Position
+                    \item Box Quaternion
+                    \item Box Position
+                \end{itemize}
+        \end{itemize}
+            \vspace{1em}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+        $$
+        \begin{aligned}
+    \text{Reward} &= \text{Final Euclidean Distance} \\
+             &+  \text{Final Rotational Distance} \\
+             &+  \mathds{1} \left\{\text{eucl. dist < 5cm and rot. dist < .5rad}\right\} \\
+             &+  \max_t\  step(v_t) \\
+             &+  \sum_t \left\Vert x_t - x_t^\text{clipped} \right\Vert \\
+        \end{aligned}
+        $$
+    \end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}
+\frametitle{In the Real World}
+
+\begin{columns}[t]
+    \begin{column}{0.3\textwidth}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+        \includegraphics[width=\linewidth]{media/Architecture.pdf}
+    \end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}
+\frametitle{Results}
+
+\begin{columns}[t]
+    \begin{column}{0.5\textwidth}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+    \end{column}
+\end{columns}
+\end{frame}
+
+
 \appendix
 \beginbackup{}
 \backupend{}
