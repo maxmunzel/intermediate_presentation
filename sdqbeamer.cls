@@ -26,14 +26,14 @@
 
 \DeclareOption{de}{
   \kitslogan{KIT -- Die Forschungsuniversität in der Helmholtz-Gemeinschaft}
-  \groupname{Lehrstuhl: Systeme der Informationsverwaltung, Institut für Programmstrukturen und Datenorganisation, KIT-Fakultät für Informatik}
+  \groupname{Intuitive Robots Lab (IRL) at the Institute for Anthropomatics and Robotics, KIT Department of Informatics}
   \kitlogo{kitlogo_de_rgb}
   \germantrue
   \PassOptionsToPackage{autostyle}{csquotes}
   }
 \DeclareOption{en}{
   \kitslogan{KIT -- The Research University in the Helmholtz Association}
-  \groupname{Chair for Systems of Informationmanagement, Institute for Program Structures and Data Organization, KIT Department of Informatics}
+  \groupname{Intuitive Robots Lab (IRL) at the Institute for Anthropomatics and Robotics, KIT Department of Informatics}
   \kitlogo{kitlogo_en_rgb}
   \germanfalse
   }
@@ -283,7 +283,7 @@
 \def\titleimage#1{\def\@titleimage{#1}}
 \def\grouplogo#1{\def\@grouplogo{#1}}
 
-\titleimage{alice}
+\titleimage{creation}
 \grouplogo{sdq_logo}
 
 % extra command for title frame to put the \titleimage behind the frame
