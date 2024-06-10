@@ -129,6 +129,39 @@
 \begin{columns}[t]
     \begin{column}{0.5\textwidth}
         \begin{itemize}
+            \item Goal: Use a ``finger'' to push a box to a target pose
+                \begin{itemize}
+                    \item Random start pose
+                    \item Fixed target pose
+                \end{itemize}
+        \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+        \begin{itemize}
+                \item Challenges
+                    \begin{itemize}
+                            \item Underactuated system
+                            \item Complex table-box interactions
+                            \item Complex robot kinematic 
+                            \item Trajectories must be safe and executable
+                    \end{itemize}
+        \end{itemize}
+    \end{column}
+
+
+\end{columns}
+\center
+    \includegraphics[height=3cm]{media/2dboxpushing.png}
+    \vspace{.1cm}\\
+    Box Pushing is a challenging benchmark problem for motion primitive reinforcement learning.
+\end{frame}
+
+\begin{frame}{Box Pushing}
+
+\begin{columns}[t]
+    \begin{column}{0.5\textwidth}
+        \vspace{1cm}
+        \begin{itemize}
             \item Goal: Use a finger to push a box to a target pose
                 \begin{itemize}
                     \item Random start pose
@@ -145,55 +178,67 @@
             \vspace{1em}
     \end{column}
     \begin{column}{0.5\textwidth}
-        $$
+        \[
         \begin{aligned}
-    \text{Reward} &= \text{Final Euclidean Distance} \\
+    \text{Reward} &:= \text{Final Euclidean Distance} \\
              &+  \text{Final Rotational Distance} \\
-             &+  \mathds{1} \left\{\text{eucl. dist < 5cm and rot. dist < .5rad}\right\} \\
+             &+  \mathds{1} \left\{\text{success}\right\} \\
              &+  \max_t\  step(v_t) \\
              &+  \sum_t \left\Vert x_t - x_t^\text{clipped} \right\Vert \\
+             \\
+            \text{Success} &:= \max_t(v_t) < v_\text{max} \\
+                &\land err_{pos} \leq 5 \text{cm} \\
+                &\land err_{rot} \leq 0.5 \text{rad} \\
+                \\
+            \text{step}(v) &:= \alpha_1 v \quad &&(\text{if } v \leq v_\text{max})\\
+                           &:= \alpha_2 v + \beta \quad &&(\text{else})\\
         \end{aligned}
-        $$
+    \]
     \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Box Pushing --- MuJoCo Simulation}
+\section{Sim2Real}
+\begin{frame}{Box Pushing --- Sim2Real}
 \begin{columns}
-    \begin{column}{0.3\textwidth}
+    \begin{column}{0.2\textwidth}
         \begin{itemize}
-                \item The box has friction and mass as measured on the real box
-                \item Finger has fixed height and orientation
-                \item PD position control with randomized parameters to match Panda Kinematics
+                \item Our Approach: Sim2Real with Domain Randomization
+                \item Box friction and mass as measured on the real box
+                \item PD position control with randomized parameters 
         \end{itemize}
     \end{column}
-    \begin{column}{0.6\textwidth}
-        \vspace{1cm}
-\includegraphics[width=\linewidth]{media/2dboxpushing}
+
+    \begin{column}{0.4\textwidth}
+\includegraphics[width=\linewidth]{media/ctrl_error.pdf}\\
+    \end{column}
+
+    \begin{column}{0.4\textwidth}
+\includegraphics[width=\linewidth]{media/traj_error.pdf}
     \end{column}
 \end{columns}
 
 \end{frame}
 
+\section{Lab Setup}
 \begin{frame}{Box Pushing --- Lab Setup}
-\center
-\includegraphics[width=.6\linewidth]{media/labsetup.jpg}
+    \begin{columns}
+    \begin{column}{0.45\textwidth}
+    \vspace{1cm}
+\includegraphics[width=\linewidth]{media/Architecture.pdf}
+
+    \end{column}
+    \begin{column}{0.45\textwidth}
+    \vspace{1cm}
+\includegraphics[width=\linewidth]{media/labsetup2.jpg}
+
+    \end{column}
+    \end{columns}
 
 \end{frame}
 
 \begin{frame}
-\frametitle{In the Real World}
-
-\begin{columns}[t]
-    \begin{column}{0.3\textwidth}
-    \end{column}
-    \begin{column}{0.5\textwidth}
-        \includegraphics[width=\linewidth]{media/Architecture.pdf}
-    \end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}
+\section{Results}
 \frametitle{Results}
 
 \begin{columns}[t]
