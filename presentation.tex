@@ -103,7 +103,7 @@
 \begin{frame}{Motion Primitive-Based (Re-)Planning Policy (MP3)}
 
 \begin{columns}[t]
-    \begin{column}{0.5\textwidth}
+    \begin{column}{\textwidth}
         \begin{itemize}
             \item Idea: let agent choose parameters of trajectory generator instead of low-level actions
                 \begin{itemize}
@@ -112,21 +112,17 @@
             \item Leads to smooth trajectories, correlated exploration
             \item Can use sparse, non-markovian rewards
             \item Blackbox and replanning variant
+            \item Train on-policy using Trust Region Projection Layers (TRPL)
         \end{itemize}
     \end{column}
     %\movie[width=\linewidth]{MP3-Replan Boxpushing}{media/7dof_boxpushing_replan.mp4}
     \begin{column}{0.5\textwidth}
     \end{column}
 \end{columns}
-\vspace{.3cm}
+\vspace{1cm}
      We have impressive results with simulated environments, but how well do they work in the real world?
 \end{frame}
 
-\begin{frame}{Box Pushing}
-
-\includegraphics[width=.8\linewidth]{media/2dboxpushing}
-
-\end{frame}
 \begin{frame}{Box Pushing}
 \section{Box Pushing}
 
@@ -160,6 +156,29 @@
         $$
     \end{column}
 \end{columns}
+\end{frame}
+
+\begin{frame}{Box Pushing --- MuJoCo Simulation}
+\begin{columns}
+    \begin{column}{0.3\textwidth}
+        \begin{itemize}
+                \item The box has friction and mass as measured on the real box
+                \item Finger has fixed height and orientation
+                \item PD position control with randomized parameters to match Panda Kinematics
+        \end{itemize}
+    \end{column}
+    \begin{column}{0.6\textwidth}
+        \vspace{1cm}
+\includegraphics[width=\linewidth]{media/2dboxpushing}
+    \end{column}
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Box Pushing --- Lab Setup}
+\center
+\includegraphics[width=.6\linewidth]{media/labsetup.jpg}
+
 \end{frame}
 
 \begin{frame}
