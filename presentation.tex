@@ -67,7 +67,6 @@
 %\usepackage{media9}
 \usepackage{booktabs}
 \usepackage{longtable}
-\usepackage{color}
 \usepackage{array}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
@@ -117,31 +116,21 @@
 
 \begin{frame}
 \frametitle{Agenda}
+    \vspace{.5cm}
 \tableofcontents
 \end{frame}
 
 \section{Motion Primitive-Based (Re-)Planning Policy (MP3)}
 \begin{frame}{Motion Primitive-Based (Re-)Planning Policy (MP3)}
 
-\begin{columns}[t]
-    \begin{column}{\textwidth}
-        \begin{itemize}
-            \item Idea: let agent choose parameters of trajectory generator instead of low-level actions
-                \begin{itemize}
-                    \item We use ProDMPs for their replanning-ability
-                \end{itemize}
-            \item Leads to smooth trajectories, correlated exploration
-            \item Can use sparse, non-markovian rewards
-            \item Blackbox and replanning variant
-            \item Train on-policy using Trust Region Projection Layers (TRPL)
-        \end{itemize}
-    \end{column}
-    %\movie[width=\linewidth]{MP3-Replan Boxpushing}{media/7dof_boxpushing_replan.mp4}
-    \begin{column}{0.5\textwidth}
-    \end{column}
-\end{columns}
-\vspace{1cm}
-     We have impressive results with simulated environments, but how well do they work in the real world?
+\center 
+    \vspace{1cm}
+\includegraphics[width=.7\linewidth]{media/mp3.png}
+\begin{itemize}
+\item Blackbox and replanning variant
+\item Works with sparse, non-markovian rewards
+\item Trained on-policy using Trust Region Projection Layers (TRPL)
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Box Pushing}
@@ -180,7 +169,7 @@
 \begin{frame}{Box Pushing}
 
 \begin{columns}[t]
-    \begin{column}{0.5\textwidth}
+    \begin{column}{0.4\textwidth}
         \vspace{1cm}
         \begin{itemize}
             \item Goal: Use a finger to push a box to a target pose
@@ -192,50 +181,71 @@
             \item Observation:
                 \begin{itemize}
                     \item Finger Position
-                    \item Box Quaternion
-                    \item Box Position
+                    \item Box Quaternion + Position
+                \end{itemize}
+            \item Success
+                \begin{itemize}
+                \item $\max_t(v_t) < v_\text{max}$
+                \item $\text{err}_{position} \leq 5 \text{cm}$
+                \item $\text{err}_{rotation} \leq 0.5 \text{rad}$
                 \end{itemize}
         \end{itemize}
             \vspace{1em}
     \end{column}
     \begin{column}{0.5\textwidth}
+        \vspace{.5cm}
         \[
         \begin{aligned}
-    \text{Reward} &:= \text{Final Euclidean Distance} \\
-             &+  \text{Final Rotational Distance} \\
-             &+  \mathds{1} \left\{\text{success}\right\} \\
-             &+  \max_t\  step(v_t) \\
-             &+  \sum_t \left\Vert x_t - x_t^\text{clipped} \right\Vert \\
+            \text{Reward} &:= \textcolor{kit-blue100}{\text{Final Euclidean Distance}} \\
+             &+  \textcolor{kit-blue100}{\text{Final Rotational Distance}} \\
+             &+  \textcolor{kit-blue100}{\mathds{1} \left\{\text{success}\right\} } \\
+             &+  \textcolor{kit-green100}{\max_t\  \text{step}(v_t)} \\
+             &+  \textcolor{kit-lila100}{\sum_t \left\Vert x_t - x_t^\text{clipped} \right\Vert }\\
              \\
-            \text{Success} &:= \max_t(v_t) < v_\text{max} \\
-                &\land err_{pos} \leq 5 \text{cm} \\
-                &\land err_{rot} \leq 0.5 \text{rad} \\
-                \\
-            \text{step}(v) &:= \alpha_1 v \quad &&(\text{if } v \leq v_\text{max})\\
-                           &:= \alpha_2 v + \beta \quad &&(\text{else})\\
+    step(v) := & \includegraphics[scale=.4]{media/step.pdf} \\
         \end{aligned}
     \]
+
     \end{column}
 \end{columns}
+\center
+    Our reward includes \textcolor{kit-blue100}{sparse}, \textcolor{kit-green100}{non-markovian} and \textcolor{kit-lila100}{dense} components.
 \end{frame}
 
 \section{Sim2Real}
-\begin{frame}{Box Pushing --- Sim2Real}
+\begin{frame}{Moving into the real world --- TODO: Better title}
 \begin{columns}
-    \begin{column}{0.2\textwidth}
+    \begin{column}{0.5\textwidth}
         \begin{itemize}
-                \item Our Approach: Sim2Real with Domain Randomization
-                \item Box friction and mass as measured on the real box
-                \item PD position control with randomized parameters 
+                \item No controller tracks perfectly
+                \item The agent will optimize the commanded trajectory based on the \textit{tracked} trajectory.
+                \item Therefore \textbf{tuning} for the real robot and \textbf{randomization} are crucial!
+                \item This is universal for all real-robot MP applications.
+        \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+\includegraphics[width=\linewidth]{media/traj_error.pdf}
+    \end{column}
+\end{columns}
+
+\end{frame}
+\section{Sim2Real}
+\begin{frame}{Moving into the real world --- TODO: Better title}
+\begin{columns}
+    \begin{column}{0.5\textwidth}
+        \begin{itemize}
+                \item Our approach:
+                    \begin{itemize}
+                            \item Record real-robot executions
+                            \item Optimize PD parameters using bayesian optimization
+                            \item Choose a lower/higher P-gain
+                            \item Randomize between them during training
+                    \end{itemize}
         \end{itemize}
     \end{column}
 
-    \begin{column}{0.4\textwidth}
+    \begin{column}{0.5\textwidth}
 \includegraphics[width=\linewidth]{media/ctrl_error.pdf}\\
-    \end{column}
-
-    \begin{column}{0.4\textwidth}
-\includegraphics[width=\linewidth]{media/traj_error.pdf}
     \end{column}
 \end{columns}
 
@@ -249,7 +259,7 @@
 \includegraphics[width=\linewidth]{media/Architecture.pdf}
 
     \end{column}
-    \begin{column}{0.45\textwidth}
+    \begin{column}{0.35\textwidth}
     \vspace{1cm}
 \includegraphics[width=\linewidth]{media/labsetup2.jpg}
 
@@ -263,6 +273,21 @@
 \center
     \includegraphics[width=.7\linewidth]{media/blackbox_presentation.pdf}\\
     \includegraphics[width=.7\linewidth]{media/replan_presentation.pdf}
+\end{frame}
+
+\begin{frame}{Further Work}
+
+    TODO: Image of sweeps.pdf
+
+    Main points here: 
+    \begin{itemize}
+            \item get better performance
+            \item properly investigate the importance of DR/replanning/sparse rewards/markovian rewards
+            \item compare with dense policies
+    \end{itemize}
+
+
+    
 \end{frame}
 
 
