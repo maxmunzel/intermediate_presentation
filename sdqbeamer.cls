@@ -283,7 +283,7 @@
 \def\titleimage#1{\def\@titleimage{#1}}
 \def\grouplogo#1{\def\@grouplogo{#1}}
 
-\titleimage{creation}
+\titleimage{creation_box}
 \grouplogo{sdq_logo}
 
 % extra command for title frame to put the \titleimage behind the frame

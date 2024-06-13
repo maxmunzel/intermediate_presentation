@@ -98,17 +98,17 @@
 \begin{itemize}
     \item Motion Primitives (MPs)
    \begin{itemize}
-       \item solve otherwise unsolveable Reinforcement Learning problems\dots in Simulation.
-       \item have nice properties for real robots
-       \item have not yet been used for real-life reinforcement learning
+       \item Can solve problems with sparse and non-markovian rewards
+       \item Have nice properties for real robots
+       \item Contextual MPRL has not yet been used for real-life reinforcement learning
    \end{itemize}
    \item So many questions
    \begin{itemize}
-           \item How to design a gym environment for the real world?
            \item How big is the sim2real gap? How do we cross it?
            \item Does replanning help?
-           \item Is it better than traditional methods?
+           \item Is it better than step-based methods?
            \item Strengths/weaknesses of MPs? 
+           \item How to design a gym environment for the real world?
    \end{itemize}
 \end{itemize}
 
@@ -180,8 +180,8 @@
             \item Action space: 2D finger positions
             \item Observation:
                 \begin{itemize}
-                    \item Finger Position
-                    \item Box Quaternion + Position
+                    \item Finger position
+                    \item Box quaternion + noisy position
                 \end{itemize}
             \item Success
                 \begin{itemize}
@@ -212,14 +212,48 @@
     Our reward includes \textcolor{kit-blue100}{sparse}, \textcolor{kit-green100}{non-markovian} and \textcolor{kit-lila100}{dense} components.
 \end{frame}
 
-\section{Sim2Real}
-\begin{frame}{Moving into the real world --- TODO: Better title}
+\subsection{Making it work in Simulation}
+\begin{frame}{Box Pushing --- In Simulation}
+
+\begin{columns}[t]
+    \begin{column}{0.4\textwidth}
+        \vspace{1cm}
+        \begin{itemize}
+            \item Box Pushing is \textbf{hard}.
+            \begin{itemize}
+                \item Constant struggle to get good policies
+                \item $\approx 40M$ samples per policy
+                \item 108 Sweeps so far, 2357 policies trained
+            \end{itemize}
+            \item So many parameters:
+            \begin{itemize}
+                \item Reward coefficients
+                \item Maximum Speed $v_{\max}$
+                \item Amount of randomization
+                \item Episode Length
+                \item MP Parameters
+                \item TRPL Hyperparameters
+            \end{itemize}
+        \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+        \vspace{.2cm} \\
+        \includegraphics[width=.9\linewidth]{media/clipping_reward.pdf}
+
+        \[ \text{Reward}_{\text{clipping}} := \sum_t \left\Vert x_t - x_t^\text{clipped} \right\Vert \]
+    \end{column}
+\end{columns}
+\end{frame}
+
+\subsection{Making it work on the real Robot}
+
+\begin{frame}{Box Pushing --- Making it work on the real Robot}
 \begin{columns}
     \begin{column}{0.5\textwidth}
         \begin{itemize}
                 \item No controller tracks perfectly
-                \item The agent will optimize the commanded trajectory based on the \textit{tracked} trajectory.
-                \item Therefore \textbf{tuning} for the real robot and \textbf{randomization} are crucial!
+                \item The agent will optimize the commanded trajectory based on the \textbf{executed} trajectory.
+                \item Therefore \textbf{tuning} for the real robot is crucial!
                 \item This is universal for all real-robot MP applications.
         \end{itemize}
     \end{column}
@@ -229,18 +263,21 @@
 \end{columns}
 
 \end{frame}
-\section{Sim2Real}
-\begin{frame}{Moving into the real world --- TODO: Better title}
+\begin{frame}{Box Pushing --- Making it work on the real Robot}
 \begin{columns}
     \begin{column}{0.5\textwidth}
         \begin{itemize}
                 \item Our approach:
                     \begin{itemize}
                             \item Record real-robot executions
-                            \item Optimize PD parameters using bayesian optimization
+                            \item Optimize simulation PD parameters using bayesian optimization
                             \item Choose a lower/higher P-gain
                             \item Randomize between them during training
                     \end{itemize}
+
+                    \[
+                        \min_{kp, kd, mass} \sum_t \left\Vert x_t^\text{real} - x_t^\text{sim}(kp, kd, mass) \right\Vert
+                    \]
         \end{itemize}
     \end{column}
 
@@ -251,12 +288,12 @@
 
 \end{frame}
 
-\section{Lab Setup}
-\begin{frame}{Box Pushing --- Lab Setup}
+\section{Rollout Architecture}
+\begin{frame}{Rollout Architecture}
     \begin{columns}
     \begin{column}{0.45\textwidth}
     \vspace{1cm}
-\includegraphics[width=\linewidth]{media/Architecture.pdf}
+\includegraphics[width=\linewidth]{media/Architecture2.pdf}
 
     \end{column}
     \begin{column}{0.35\textwidth}
@@ -268,6 +305,11 @@
 
 \end{frame}
 
+\begin{frame}{Real World Evaluation}
+    \center
+    Small Demo
+\end{frame}
+
 \section{Results}
 \begin{frame}{Results}
 \center
@@ -275,24 +317,28 @@
     \includegraphics[width=.7\linewidth]{media/replan_presentation.pdf}
 \end{frame}
 
-\begin{frame}{Further Work}
+\section{Next Steps}
+\begin{frame}{Next Steps}
 
-    TODO: Image of sweeps.pdf
-
-    Main points here: 
     \begin{itemize}
-            \item get better performance
-            \item properly investigate the importance of DR/replanning/sparse rewards/markovian rewards
-            \item compare with dense policies
+        \item Push to 90\% real-life success 
+        \begin{itemize}
+                \item I think its 50/50 between sim2real and general model performance
+        \end{itemize}
+        \item Move inference away from my laptop 
+        \item Comparison with step-based methods
+        \item Proper ablation studies
     \end{itemize}
-
-
-    
 \end{frame}
 
 
 \appendix
 \beginbackup{}
+\begin{frame}{Workspace Clipping Vizualized}
+    \center
+    \includegraphics[width=.7\linewidth]{media/workspace_clipping.pdf}
+\end{frame}
+
 \backupend{}
 
 \end{document}
