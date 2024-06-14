@@ -104,11 +104,10 @@
    \end{itemize}
    \item So many questions
    \begin{itemize}
-           \item How big is the sim2real gap? How do we cross it?
+           \item How big is the sim2real gap? 
            \item Does replanning help?
-           \item Is it better than step-based methods?
-           \item Strengths/weaknesses of MPs? 
            \item How to design a gym environment for the real world?
+           \item Is it better than step-based methods?
    \end{itemize}
 \end{itemize}
 
@@ -185,9 +184,9 @@
                 \end{itemize}
             \item Success
                 \begin{itemize}
-                \item $\max_t(v_t) < v_\text{max}$
                 \item $\text{err}_{position} \leq 5 \text{cm}$
                 \item $\text{err}_{rotation} \leq 0.5 \text{rad}$
+                \item $\max_t(v_t) < v_\text{max}$
                 \end{itemize}
         \end{itemize}
             \vspace{1em}
@@ -199,8 +198,8 @@
             \text{Reward} &:= \textcolor{kit-blue100}{\text{Final Euclidean Distance}} \\
              &+  \textcolor{kit-blue100}{\text{Final Rotational Distance}} \\
              &+  \textcolor{kit-blue100}{\mathds{1} \left\{\text{success}\right\} } \\
-             &+  \textcolor{kit-green100}{\max_t\  \text{step}(v_t)} \\
-             &+  \textcolor{kit-lila100}{\sum_t \left\Vert x_t - x_t^\text{clipped} \right\Vert }\\
+             &-  \textcolor{kit-green100}{\max_t\  \text{step}(v_t)} \\
+             &-  \textcolor{kit-lila100}{\sum_t \left\Vert x_t - x_t^\text{clipped} \right\Vert }\\
              \\
     step(v) := & \includegraphics[scale=.4]{media/step.pdf} \\
         \end{aligned}
@@ -221,9 +220,10 @@
         \begin{itemize}
             \item Box Pushing is \textbf{hard}.
             \begin{itemize}
-                \item Constant struggle to get good policies
-                \item $\approx 40M$ samples per policy
+                \item It took long to get good policies
                 \item 108 Sweeps so far, 2357 policies trained
+                \item $\approx 25-50\text{M}$ sim steps per policy 
+                \item $\approx 60-120\text{K}$ 4s trajectories
             \end{itemize}
             \item So many parameters:
             \begin{itemize}
@@ -238,11 +238,56 @@
     \end{column}
     \begin{column}{0.5\textwidth}
         \vspace{.2cm} \\
-        \includegraphics[width=.9\linewidth]{media/clipping_reward.pdf}
+        \center 
+        \includegraphics[width=.9\linewidth]{media/training.pdf} \\
+        \center 
+        $48\text{h} \cdot 40\text{CPU}$ training
 
-        \[ \text{Reward}_{\text{clipping}} := \sum_t \left\Vert x_t - x_t^\text{clipped} \right\Vert \]
     \end{column}
 \end{columns}
+\end{frame}
+
+\begin{frame}{Box Pushing --- Clipping }
+    \begin{columns}
+    \begin{column}{0.4\textwidth}
+        \vspace{.1cm}
+        \[ \text{Reward}_{\text{clipping}} := \sum_t \left\Vert x_t - x_t^\text{clipped} \right\Vert \]
+        \begin{itemize}
+            \item Idea: Penalize the agent for \textbf{leaving the working area}
+            \item Outside of the working area, the policy is \textbf{ineffective}
+            \item Without the reward, the agent\dots 
+            \begin{itemize}
+                    \item spent 80\% of its time outside the working area
+                    \item never learned to correct this
+                    \item exceeded the maximum speed $v_\text{max}$
+            \end{itemize}
+        \end{itemize}
+    \end{column}
+    \begin{column}{0.6\textwidth}
+        \vspace{.1cm}
+    \center
+    \includegraphics[width=\linewidth]{media/workspace_clipping.pdf}
+
+    \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Box Pushing --- Clipping}
+      
+\begin{columns}       
+     \begin{column}{0.4\textwidth}
+        \vspace{1cm}
+        \begin{itemize}
+                \item Clipping penality has a big effect on performance
+                \item Every MP Env should have one
+        \end{itemize}
+    \end{column}
+    \begin{column}{0.6\textwidth}
+        \vspace{.2cm} \\
+        \includegraphics[width=\linewidth]{media/clipping_reward.pdf}
+
+    \end{column}
+\end{columns}       
 \end{frame}
 
 \subsection{Making it work on the real Robot}
@@ -271,8 +316,8 @@
                     \begin{itemize}
                             \item Record real-robot executions
                             \item Optimize simulation PD parameters using bayesian optimization
-                            \item Choose a lower/higher P-gain
-                            \item Randomize between them during training
+                            \item Choose a lower/higher P-gain 
+                            \item Sample $Kp \sim \text{U}(Kp^-, Kp^+)$ during training
                     \end{itemize}
 
                     \[
@@ -334,10 +379,6 @@
 
 \appendix
 \beginbackup{}
-\begin{frame}{Workspace Clipping Vizualized}
-    \center
-    \includegraphics[width=.7\linewidth]{media/workspace_clipping.pdf}
-\end{frame}
 
 \backupend{}
 
