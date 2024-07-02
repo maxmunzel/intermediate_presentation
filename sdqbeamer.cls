@@ -180,11 +180,11 @@
   \begin{beamercolorbox}[wd=\dimexpr\paperwidth-47mm\relax, ht=\kitbottomheight, dp=\kitbottomdepth]{}
       \insertshortauthor: \insertshorttitle
   \end{beamercolorbox}%
-  \begin{beamercolorbox}[wd=14mm, ht=\kitbottomheight, dp=\kitbottomdepth, rightskip=5.5mm]{}
+  \begin{beamercolorbox}[wd=19mm, ht=\kitbottomheight, dp=\kitbottomdepth, rightskip=15.5mm]{}
     \ifnavbarinfoot
-      \raisebox{1.5mm}{\includegraphics[width=8.5mm]{logos/\@grouplogo}}
+      %\raisebox{1.5mm}{\includegraphics[width=18.5mm]{logos/\@grouplogo}}
     \else
-      \raisebox{-1mm}{\includegraphics[width=8.5mm]{logos/\@grouplogo}}
+      %\raisebox{-1mm}{\includegraphics[width=18.5mm]{logos/\@grouplogo}}
     \fi
   \end{beamercolorbox}%
 }
@@ -327,8 +327,8 @@
   \end{textblock*}
   
   %group logo
-  \begin{textblock*}{16mm}(\dimexpr\paperwidth-21.5mm\relax,5mm)
-  \includegraphics[width=16mm]{logos/\@grouplogo} 
+  \begin{textblock*}{32mm}(\dimexpr\paperwidth-37.5mm\relax,5mm)
+  \includegraphics[width=32mm]{logos/\@grouplogo} 
   \end{textblock*}
   
   %title

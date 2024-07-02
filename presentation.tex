@@ -43,7 +43,7 @@
 % for a custom group logo, copy your file into the 'logos'
 % directory, insert the filename in the line below and uncomment it
 
-\grouplogo{irl-logo}
+\grouplogo{irlalr}
 
 % (*.eps format if you use latex+dvips+ps2pdf,
 % *.jpg/*.png/*.pdf if you use pdflatex)
@@ -59,7 +59,7 @@
 
 %% Title (and possibly subtitle) of the thesis
 \title{Solving Real-World Robot Manipulation Tasks with Deep Reinforcement Learning}
-\subtitle{Box Pushing on a real Panda Robot}
+\subtitle{Box Pushing with Motion Primitives on a real Panda Robot}
 
 % Bibliography 
 \usepackage{dsfont}
@@ -93,29 +93,10 @@
 
 %table of contents
 
-\section{Motivation}
-\begin{frame}{Motivation}
-\begin{itemize}
-    \item Motion Primitives (MPs)
-   \begin{itemize}
-       \item Can solve problems with sparse and non-markovian rewards
-       \item Have nice properties for real robots
-       \item Contextual MPRL has not yet been used for real-life reinforcement learning
-   \end{itemize}
-   \item So many questions
-   \begin{itemize}
-           \item How big is the sim2real gap? 
-           \item Does replanning help?
-           \item How to design a gym environment for the real world?
-           \item Is it better than step-based methods?
-   \end{itemize}
-\end{itemize}
-
-\end{frame}
 
 \begin{frame}
 \frametitle{Agenda}
-    \vspace{.5cm}
+    \vspace{1cm}
 \tableofcontents
 \end{frame}
 
@@ -128,7 +109,22 @@
 \begin{itemize}
 \item Blackbox and replanning variant
 \item Works with sparse, non-markovian rewards
+\item Generates smooth trajectories
 \item Trained on-policy using Trust Region Projection Layers (TRPL)
+\end{itemize}
+\end{frame}
+
+\subsection{MP3 in the Real World}
+\begin{frame}{MP3 in the Real World}
+
+\center 
+    \vspace{1cm}
+\includegraphics[width=.7\linewidth]{media/mp3.png}
+   \begin{itemize}
+           \item Contextual MPRL was never used on a real robot\dots will it work?
+           \item How big is the sim2real gap?
+           \item Do we need replanning?
+           \item Is it better than step-based methods?
 \end{itemize}
 \end{frame}
 
@@ -151,7 +147,7 @@
                     \begin{itemize}
                             \item Underactuated system
                             \item Complex table-box interactions
-                            \item Complex robot kinematic 
+                            \item Complex Panda kinematic 
                             \item Trajectories must be safe and executable
                     \end{itemize}
         \end{itemize}
@@ -220,8 +216,8 @@
         \begin{itemize}
             \item Box Pushing is \textbf{hard}.
             \begin{itemize}
-                \item It took long to get good policies
-                \item 108 Sweeps so far, 2357 policies trained
+                \item It took long to get $60-80$\% success in sim 
+                \item 127 Sweeps so far, 2628 policies trained
                 \item $\approx 25-50\text{M}$ sim steps per policy 
                 \item $\approx 60-120\text{K}$ 4s trajectories
             \end{itemize}
@@ -245,49 +241,6 @@
 \end{columns}
 \end{frame}
 
-\begin{frame}{Box Pushing --- Clipping }
-    \begin{columns}
-    \begin{column}{0.4\textwidth}
-        \vspace{.1cm}
-        \[ \text{Reward}_{\text{clipping}} := \sum_t \left\Vert x_t - x_t^\text{clipped} \right\Vert \]
-        \begin{itemize}
-            \item Idea: Penalize the agent for \textbf{leaving the working area}
-            \item Outside of the working area, the policy is \textbf{ineffective}
-            \item Without the reward, the agent\dots 
-            \begin{itemize}
-                    \item spent 80\% of its time outside the working area
-                    \item never learned to correct this
-                    \item exceeded the maximum speed $v_\text{max}$
-            \end{itemize}
-        \end{itemize}
-    \end{column}
-    \begin{column}{0.6\textwidth}
-        \vspace{.1cm}
-    \center
-    \includegraphics[width=\linewidth]{media/workspace_clipping.pdf}
-
-    \end{column}
-    \end{columns}
-\end{frame}
-
-\begin{frame}{Box Pushing --- Clipping}
-      
-\begin{columns}       
-     \begin{column}{0.4\textwidth}
-        \vspace{1cm}
-        \begin{itemize}
-                \item Clipping penality has a big effect on performance
-                \item Every MP Env should have one
-        \end{itemize}
-    \end{column}
-    \begin{column}{0.6\textwidth}
-        \vspace{.2cm} \\
-        \includegraphics[width=\linewidth]{media/clipping_reward.pdf}
-
-    \end{column}
-\end{columns}       
-\end{frame}
-
 \subsection{Making it work on the real Robot}
 
 \begin{frame}{Box Pushing --- Making it work on the real Robot}
@@ -295,9 +248,9 @@
     \begin{column}{0.5\textwidth}
         \begin{itemize}
                 \item No controller tracks perfectly
-                \item The agent will optimize the commanded trajectory based on the \textbf{executed} trajectory.
-                \item Therefore \textbf{tuning} for the real robot is crucial!
-                \item This is universal for all real-robot MP applications.
+                \item The agent will \textbf{adapt} to the simulated controller under- or overshooting.
+                \item Also the real robot trajectory has artifacts because of the 7DoF kinematics
+                \item \textbf{Tuning for the real robot is crucial!}
         \end{itemize}
     \end{column}
     \begin{column}{0.5\textwidth}
@@ -377,6 +330,49 @@
 
 \appendix
 \beginbackup{}
+\begin{frame}{Box Pushing --- Clipping }
+    \begin{columns}
+    \begin{column}{0.4\textwidth}
+        \vspace{.1cm}
+        \[ \text{Reward}_{\text{clipping}} := \sum_t \left\Vert x_t - x_t^\text{clipped} \right\Vert \]
+        \begin{itemize}
+            \item Idea: Penalize the agent for \textbf{leaving the working area}
+            \item Outside of the working area, the policy is \textbf{ineffective}
+            \item Without the reward, the agent\dots 
+            \begin{itemize}
+                    \item spent 80\% of its time outside the working area
+                    \item never learned to correct this
+                    \item exceeded the maximum speed $v_\text{max}$
+            \end{itemize}
+        \end{itemize}
+    \end{column}
+    \begin{column}{0.6\textwidth}
+        \vspace{.1cm}
+    \center
+    \includegraphics[width=\linewidth]{media/workspace_clipping.pdf}
+
+    \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Box Pushing --- Clipping}
+      
+\begin{columns}       
+     \begin{column}{0.4\textwidth}
+        \vspace{1cm}
+        \begin{itemize}
+                \item Clipping penality has a big effect on performance
+                \item Every MP Env should have one
+        \end{itemize}
+    \end{column}
+    \begin{column}{0.6\textwidth}
+        \vspace{.2cm} \\
+        \includegraphics[width=\linewidth]{media/clipping_reward.pdf}
+
+    \end{column}
+\end{columns}       
+\end{frame}
+
 
 \backupend{}
 
