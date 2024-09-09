@@ -135,23 +135,29 @@
 		\item Contextual MPRL was never used on a real robot\dots will it work?
 		\item How big is the sim2real gap?
 		\item Do we need replanning?
-		\item Is it better than step-based methods?
+		\item Is it better than step-based RL (SRL) methods?
 	\end{itemize}
 \end{frame}
 
-\subsection{Domain Randomization}
 
 
 \begin{frame}{Box Pushing}
 	\section{Box Pushing}
 
-	\begin{columns}[t]
+	\vspace{1cm}
+	\begin{columns}
 		\begin{column}{0.5\textwidth}
 			\begin{itemize}
-				\item Goal: Use a ``finger'' to push a box to a target pose
+				\item Goal: Use a stick to push a box to a target pose
 				      \begin{itemize}
 					      \item Random start pose
 					      \item Fixed target pose
+				      \end{itemize}
+				\item Success:
+				      \begin{itemize}
+					      \item Position Error < 5cm
+					      \item Rotation Error < 0.5 rad
+
 				      \end{itemize}
 			\end{itemize}
 		\end{column}
@@ -189,7 +195,7 @@
 		\item Solution: Domain Randomization
 		      \begin{itemize}
 			      \item Friction $\mu \sim 0.43 \pm 0.1$ \quad (System Dynamics)
-			      \item Box Position $x_\text{obs} \sim x \pm 5cm$ \quad (Observations)
+			      \item Box Position $x_\text{obs} \sim x \pm 5$cm \quad (Observations)
 			      \item Controller P-Gain $k_p \sim k_p^* \pm 68$ \quad (Actions)
 		      \end{itemize}
 
@@ -199,10 +205,10 @@
 
 
 
+\section{Experiment 1}
+\subsection{Experiment 1}
 
 \begin{frame}{Experiment 1: Setup}
-	\section{Experiment 1}
-	\subsection{Experiment 1}
 
 	\begin{center}
 		\vspace{1cm}
@@ -236,9 +242,9 @@
 
 	\end{columns}
 \end{frame}
-\begin{frame}{Experiment 1: Blackbox with DR Video}
-	\subsection{Experiment 1: Blackbox Video}
 
+\subsection{Experiment 1: Blackbox Video}
+\begin{frame}{Experiment 1: Blackbox with DR Video}
 	\begin{columns}[t]
 		\column{0.05\textwidth}
 		\column{0.7\textwidth}
@@ -255,11 +261,8 @@
 			\vspace{1cm}
 			\begin{itemize}
 				\item Smooth trajectories
-				\item Gentle Accelerations
-				\item $\approx0.4$m/s max end-effector velocity
-				\item DR causes wider, faster Trajectory
-				\item Both Trajectories combine small and big movements
-				\item Policies slow down for small movements
+				\item Both Trajectories combine small/slow and big/fast movements
+				\item DR causes wider, more robust Trajectory
 			\end{itemize}
 		\end{column}
 		\begin{column}{0.7\textwidth}
@@ -269,8 +272,10 @@
 		\end{column}
 	\end{columns}
 \end{frame}
+
+
+\subsection{Experiment 1: Results}
 \begin{frame}{Experiment 1: Blackbox Results}
-	\subsection{Experiment 1: Results}
 
 	\begin{columns}[t]
 		\begin{column}{0.3\textwidth}
@@ -290,8 +295,9 @@
 		\end{column}
 	\end{columns}
 \end{frame}
+
+\subsection{Experiment 1: MP3 Replanning Video}
 \begin{frame}{Experiment 1: MP3 Replanning DR Video}
-	\subsection{Experiment 1: MP3 Replanning Video}
 
 	\begin{columns}[t]
 		\column{0.05\textwidth}
@@ -303,50 +309,49 @@
 
 	\end{columns}
 \end{frame}
-\begin{frame}{Experiment 1: MP3 Replanning Results}
-	\subsection{Experiment 1: Results}
-
-	\begin{columns}[t]
-		\begin{column}{0.3\textwidth}
-			\vspace{1cm}
-			\begin{itemize}
-				\item 51\% success without DR
-				\item 94\% success with DR
-				\item 90° Error common without DR
-				\item With DR, all but one start Pose successful
-			\end{itemize}
-		\end{column}
-		\begin{column}{0.7\textwidth}
-			\vspace{1cm}
-			\includegraphics[width=\textwidth]{../latex/figures/results-2024-07-29_sweep121-replan-long-1500-128-full.pdf}\\
-			\includegraphics[width=\textwidth]{../latex/figures/results-2024-07-29_sweep122-replan-long-1500-128-full.pdf}
-		\end{column}
-	\end{columns}
-\end{frame}
-
 \begin{frame}{Experiment 1: MP3 Replanning Trajectories}
 
 	\begin{columns}[t]
 		\begin{column}{0.3\textwidth}
 			\vspace{1cm}
 			\begin{itemize}
-				\item Noisy commands
-				\item Robot is effective in smoothing the trajectory
-				\item $\approx0.4$m/s max end-effector velocity
-				\item But only $\approx0.2$m/s most of the time
-				\item Go to target, rotate, oscillate
+				\item Smooth trajectories
+				\item Replanning happens every full second
+				\item Noticeable Drops in Velocity at 2s, 4s.
+				\item DR learns to break contact when switching corners
 			\end{itemize}
 		\end{column}
 		\begin{column}{0.7\textwidth}
 			\vspace{1cm}
+			\includegraphics[width=\textwidth]{../latex/figures/traj_results-2024-07-29_sweep122-replan-long-1500-128-full.pdf} \\
 			\includegraphics[width=\textwidth]{../latex/figures/traj_results-2024-07-29_sweep121-replan-long-1500-128-full.pdf} \\
-			\includegraphics[width=\textwidth]{../latex/figures/traj_results-2024-07-29_sweep122-replan-long-1500-128-full.pdf}
 		\end{column}
 	\end{columns}
 \end{frame}
 
+\subsection{Experiment 1: Results}
+\begin{frame}{Experiment 1: MP3 Replanning Results}
+	\begin{columns}[t]
+		\begin{column}{0.3\textwidth}
+			\vspace{1cm}
+			\begin{itemize}
+				\item \textbf{94\% success with DR}
+				\item 51\% success without DR
+				\item 90° Error common without DR
+				\item With DR, all but one start Pose successful
+			\end{itemize}
+		\end{column}
+		\begin{column}{0.7\textwidth}
+			\vspace{1cm}
+			\includegraphics[width=\textwidth]{../latex/figures/results-2024-07-29_sweep122-replan-long-1500-128-full.pdf}
+			\includegraphics[width=\textwidth]{../latex/figures/results-2024-07-29_sweep121-replan-long-1500-128-full.pdf}\\
+		\end{column}
+	\end{columns}
+\end{frame}
+
+
+\subsection{Experiment 1: Step-Based Video}
 \begin{frame}{Experiment 1: Step-Based Video}
-	\subsection{Experiment 1: Step-Based Video}
 
 	\begin{columns}[t]
 		\column{0.05\textwidth}
@@ -356,8 +361,9 @@
 
 	\end{columns}
 \end{frame}
+
+\subsection{Experiment 1: Step-Based Video}
 \begin{frame}{Experiment 1: Step-Based Video}
-	\subsection{Experiment 1: Step-Based Video}
 
 
 	\vspace{1cm}
@@ -370,25 +376,6 @@
 	\end{columns}
 
 \end{frame}
-\begin{frame}{Experiment 1: Step-Based Results}
-	\subsection{Experiment 1: Results}
-
-	\begin{columns}[t]
-		\begin{column}{0.3\textwidth}
-			\vspace{1cm}
-			\begin{itemize}
-				\item 96\% success without DR
-				\item Unimodal Position and Rotation Error
-				\item More pronounced Position Error
-			\end{itemize}
-		\end{column}
-		\begin{column}{0.7\textwidth}
-			\vspace{1cm}
-			\includegraphics[width=\textwidth]{../latex/figures/results-2024-08-11_sweep123-trpl-slow.pdf}
-		\end{column}
-	\end{columns}
-\end{frame}
-
 \begin{frame}{Experiment 1: Step-Based Trajectories}
 
 	\begin{columns}[t]
@@ -410,23 +397,204 @@
 \end{frame}
 
 
-\section{Next Steps}
-\begin{frame}{Next Steps}
+\subsection{Experiment 1: Results}
+\begin{frame}{Experiment 1: Step-Based Results}
+
+	\begin{columns}[t]
+		\begin{column}{0.3\textwidth}
+			\vspace{1cm}
+			\begin{itemize}
+				\item 96\% success without DR
+				\item Unimodal Position and Rotation Error
+				\item More pronounced Position Error
+			\end{itemize}
+		\end{column}
+		\begin{column}{0.7\textwidth}
+			\vspace{1cm}
+			\includegraphics[width=\textwidth]{../latex/figures/results-2024-08-11_sweep123-trpl-slow.pdf}
+		\end{column}
+	\end{columns}
+\end{frame}
+
+\subsection{Experiment 1: Discussion}
+\begin{frame}{Experiment 1: Discussion}
+
+	\begin{columns}[t]
+		\begin{column}{0.3\textwidth}
+			\vspace{1em}
+			\begin{itemize}
+				\item MP3 works
+				\item Replanning helps
+				\item DR helps
+				\item SRL performed very well, but\dots
+			\end{itemize}
+		\end{column}
+		\begin{column}{0.7\textwidth}
+			\vspace{1cm}
+			\begin{center}
+
+				\begin{tabular}{rccc}
+					               & \textbf{Blackbox} & \textbf{Replanning} & \textbf{Step-Based} \\
+					\toprule
+					\textbf{No DR} & 46\%              & 51\%                & 96\%                \\
+					\textbf{DR}    & 65\%              & 94\%                & ---
+				\end{tabular}
+			\end{center}
+		\end{column}
+	\end{columns}
+\end{frame}
+
+\subsection{Experiment 2: Motivation}
+\begin{frame}{Experiment 2 \& 3: Motivation}
+
+	\vspace{1cm}
+	\begin{columns}
+		\begin{column}{0.5\textwidth}
+			\begin{itemize}
+				\item Why was SRL so jittery?
+				\item Why was SRL sometimes so far off, while still being ``successful''?
+				\item Maybe its our Motion Capture\dots
+			\end{itemize}
+		\end{column}
+		\begin{column}{0.5\textwidth}
+			\includegraphics[width=\textwidth]{media/trpl_8cm.png}\\
+		\end{column}
+	\end{columns}
+\end{frame}
+\subsection{Experiment 2: Motivation}
+\subsection{Experiment 2: Motivation}
+\begin{frame}{Experiment 2 \& 3: Motion Capture Error}
+
+	\vspace{1cm}
+	\begin{columns}
+		\begin{column}{0.3\textwidth}
+			\begin{itemize}
+				\item We can use the experiment data to analyze Motion Capture Error.
+				\item We use the same four starting positions over and over
+				\item The camera moves slightly between lab days
+				\item Two Kinds of Error:
+				      \begin{itemize}
+					      \item Offset $\pm 3$cm between Experiments
+					      \item Noise $\pm 1$cm within an Experiment
+				      \end{itemize}
+			\end{itemize}
+		\end{column}
+		\begin{column}{0.7\textwidth}
+			\includegraphics[width=\linewidth]{../latex/figures/mocap_pos_scatter.pdf} \\
+		\end{column}
+	\end{columns}
+\end{frame}
+\section{Experiment 2}
+\subsection{Experiment 2: Results}
+\begin{frame}{Experiment 2}
+
+	\begin{columns}[t]
+		\begin{column}{0.3\textwidth}
+			\vspace{.1cm}
+			\begin{itemize}
+				\item Increase position noise by adding $\pm 5$cm of uniform noise to the observed box position
+				\item Replanning with DR actually improves to 100\% success
+				\item SRL drops to 81\% success
+				\item SRL becomes very noisy
+			\end{itemize}
+		\end{column}
+		\begin{column}{0.6\textwidth}
+			\vspace{1cm}
+			\includegraphics[width=.8\textwidth]{../latex/figures/traj_results-2024-08-15_sweep123-trpl-5cm.pdf}\\
+			\vspace{-1cm}
+			\includegraphics[width=\textwidth]{../latex/figures/results-2024-08-15_sweep122-replan-5cm.pdf}\\
+			\includegraphics[width=\textwidth]{../latex/figures/results-2024-08-15_sweep123-trpl-5cm.pdf}\\
+		\end{column}
+	\end{columns}
+\end{frame}
+
+\section{Experiment 3}
+\subsection{Experiment 3: Results}
+\begin{frame}{Experiment 3}
+
+	\begin{columns}[t]
+		\begin{column}{0.3\textwidth}
+			\vspace{1cm}
+			\begin{itemize}
+				\item Add constant offset of $10$cm to observed box position
+				\item Replanning with DR at 100\% success again
+				\item SRL drops to 0\% success
+			\end{itemize}
+		\end{column}
+		\begin{column}{0.6\textwidth}
+			\vspace{1cm}
+			\includegraphics[width=\textwidth]{../latex/figures/results-2024-08-19_sweep123-replan-offset.pdf}\\
+			\includegraphics[width=\textwidth]{../latex/figures/results-2024-08-19_sweep123-trpl-offset.pdf}\\
+		\end{column}
+	\end{columns}
+\end{frame}
+
+
+
+\section{Discussion}
+\begin{frame}{Discussion}
 
 	\begin{itemize}
-		\item Push to 90\% real-life success
-		      \begin{itemize}
-			      \item I think its 50/50 between sim2real and general model performance
-		      \end{itemize}
-		\item Move inference away from my laptop
-		\item Comparison with step-based methods
-		\item Proper ablation studies
+		\item We probably overestimated SRL's position accuracy
+		\item Mocap Noise could explain the unstable SRL trajectories
+		\item MP3 Replanning handles Mocap Offsets and Noise remarkably well
 	\end{itemize}
 \end{frame}
 
 
 \appendix
 \beginbackup{}
+\begin{frame}{SRL Accelerations in Simulation}
+
+	\vspace{1cm}
+	\centering
+	\includegraphics[width=.6\textwidth]{media/trpl_sim.pdf} \\
+\end{frame}
+
+\subsection{Experiment 1: How MP3 fails}
+\begin{frame}{Experiment 1: How MP3 fails}
+
+	\begin{columns}[t]
+		\begin{column}{0.5\textwidth}
+			\vspace{1cm}
+			\begin{itemize}
+				\item Distinct Modes in Rotation Error
+				      \begin{itemize}
+					      \item Failure to transition from corner to Corner (90°)
+					      \item Trying to push the sides of the box (45°)
+				      \end{itemize}
+				\item We saw that DR policies learned to mitigate this.
+				      \begin{itemize}
+					      \item Wide Movements
+					      \item Avoid Pushing the flat Sides
+					      \item Break Contact when transitioning between corners
+				      \end{itemize}
+			\end{itemize}
+		\end{column}
+		\begin{column}{0.5\textwidth}
+			\vspace{1cm}
+			\includegraphics[width=\textwidth]{../latex/figures/results-2024-08-23_sweep122-bb-128.pdf} \\
+			\includegraphics[width=\textwidth]{../latex/figures/results-2024-08-23_sweep121-bb-128_cleaned.pdf}\\
+			\includegraphics[width=\textwidth]{../latex/figures/results-2024-07-29_sweep121-replan-long-1500-128-full.pdf}\\
+		\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Experiment 1: How MP3 Replanning with DR fails}
+	\subsection{Experiment 1: How MP3 Replanning fails}
+	\begin{center}
+		\includegraphics[width=.3\linewidth]{../latex/figures/failure_0.pdf}
+		\includegraphics[width=.3\linewidth]{../latex/figures/failure_50.pdf}
+		\vspace{-.5cm}
+		\includegraphics[width=.3\linewidth]{../latex/figures/failure_100.pdf} \\
+		\includegraphics[width=.3\linewidth]{../latex/figures/failure_150.pdf}
+		\includegraphics[width=.3\linewidth]{../latex/figures/failure_200.pdf}
+		\includegraphics[width=.3\linewidth]{../latex/figures/failure_250.pdf} \\
+		Everything looks good\dots until the last replan step.
+
+		Maybe give it more weight during training?
+	\end{center}
+\end{frame}
 \begin{frame}{Box Pushing --- Clipping }
 	\begin{columns}
 		\begin{column}{0.4\textwidth}
